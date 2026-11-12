@@ -218,3 +218,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+task/
+
+# Downloaded training dataset (retrieve it with download_dataset.sh)
+mysql/data/athlete_event_results.csv
+.DS_Store

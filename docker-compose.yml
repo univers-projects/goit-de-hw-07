@@ -1,0 +1,44 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: hw07-mysql
+    environment:
+      MYSQL_DATABASE: olympic_dataset
+      MYSQL_USER: goit
+      MYSQL_PASSWORD: goit_password
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+      - ./mysql/data:/var/lib/mysql-files
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  airflow:
+    image: apache/airflow:2.10.5-python3.11
+    container_name: hw07-airflow
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: standalone
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
+      AIRFLOW_CONN_GOIT_MYSQL_DB: mysql://goit:goit_password@mysql:3306/olympic_dataset
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+      _PIP_ADDITIONAL_REQUIREMENTS: apache-airflow-providers-mysql
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_logs:/opt/airflow/logs
+
+volumes:
+  mysql_data:
+  airflow_logs:
